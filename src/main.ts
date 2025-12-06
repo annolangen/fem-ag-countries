@@ -130,7 +130,7 @@ const Header = () => html`
 
 const CountryCard = (country: Country) => html`
   <div @click=${() => showDetail(country)} class="bg-white dark:bg-dark-blue rounded-md shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200">
-    <img src="${country.flags.png}" alt="${country.name} Flag" class="w-full h-40 object-cover">
+    <img src="${country.flags.png}" alt="${country.name} Flag" class="w-full aspect-[3/2] object-fill">
     <div class="p-6">
       <h2 class="font-bold text-lg mb-4 text-very-dark-blue-text dark:text-white">${country.name}</h2>
       <div class="text-sm space-y-1 text-very-dark-blue-text dark:text-white">
@@ -159,12 +159,12 @@ const HomeView = () => html`
         @change=${handleRegionFilter}
         class="w-full px-6 py-4 rounded-md bg-transparent text-very-dark-blue-text dark:text-white appearance-none cursor-pointer outline-none"
       >
-        <option value="">Filter by Region</option>
-        <option value="Africa">Africa</option>
-        <option value="Americas">Americas</option>
-        <option value="Asia">Asia</option>
-        <option value="Europe">Europe</option>
-        <option value="Oceania">Oceania</option>
+        <option value="" class="bg-white dark:bg-dark-blue">Filter by Region</option>
+        <option value="Africa" class="bg-white dark:bg-dark-blue">Africa</option>
+        <option value="Americas" class="bg-white dark:bg-dark-blue">Americas</option>
+        <option value="Asia" class="bg-white dark:bg-dark-blue">Asia</option>
+        <option value="Europe" class="bg-white dark:bg-dark-blue">Europe</option>
+        <option value="Oceania" class="bg-white dark:bg-dark-blue">Oceania</option>
       </select>
        <span class="absolute right-4 top-4 pointer-events-none text-dark-gray dark:text-white material-icons">expand_more</span>
     </div>
