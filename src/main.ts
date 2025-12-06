@@ -119,21 +119,21 @@ const fetchCountries = async () => {
 
 // Components
 const Header = () => html`
-  <header class="bg-white dark:bg-dark-blue shadow-md py-6 px-4 md:px-12 flex justify-between items-center transition-colors duration-200">
-    <h1 class="font-extrabold text-lg md:text-2xl text-very-dark-blue-text dark:text-white">Where in the world?</h1>
-    <button @click=${toggleDarkMode} class="flex items-center gap-2 font-semibold text-very-dark-blue-text dark:text-white">
-      <span class="material-icons-outlined">dark_mode</span>
+  <header class="bg-white dark:bg-blue-900 shadow-md py-6 px-12 md:px-20 flex justify-between items-center transition-colors duration-200">
+    <h1 class="font-extrabold text-lg md:text-2xl text-grey-950 dark:text-white">Where in the world?</h1>
+    <button @click=${toggleDarkMode} class="flex items-center gap-2 font-semibold text-grey-950 dark:text-white">
+      <span class="${state.darkMode ? 'material-icons' : 'material-icons-outlined'}">dark_mode</span>
       ${state.darkMode ? 'Light Mode' : 'Dark Mode'}
     </button>
   </header>
 `;
 
 const CountryCard = (country: Country) => html`
-  <div @click=${() => showDetail(country)} class="bg-white dark:bg-dark-blue rounded-md shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200">
+  <div @click=${() => showDetail(country)} class="bg-white dark:bg-blue-900 rounded-md shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200">
     <img src="${country.flags.png}" alt="${country.name} Flag" class="w-full aspect-[3/2] object-fill">
     <div class="p-6">
-      <h2 class="font-bold text-lg mb-4 text-very-dark-blue-text dark:text-white">${country.name}</h2>
-      <div class="text-sm space-y-1 text-very-dark-blue-text dark:text-white">
+      <h2 class="font-extrabold text-lg mb-4 text-grey-950 dark:text-white">${country.name}</h2>
+      <div class="text-sm space-y-1 text-grey-950 dark:text-white">
         <p><span class="font-semibold">Population:</span> ${country.population.toLocaleString()}</p>
         <p><span class="font-semibold">Region:</span> ${country.region}</p>
         <p><span class="font-semibold">Capital:</span> ${country.capital}</p>
@@ -143,37 +143,38 @@ const CountryCard = (country: Country) => html`
 `;
 
 const HomeView = () => html`
-  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
-    <div class="relative w-full md:w-96 shadow-md rounded-md bg-white dark:bg-dark-blue">
-      <span class="absolute left-6 top-4 text-dark-gray dark:text-white material-icons">search</span>
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12 md:mb-16">
+    <div class="relative w-full md:w-96 shadow-md rounded-md bg-white dark:bg-blue-900">
+      <span class="absolute left-6 top-4 text-grey-400 dark:text-white material-icons">search</span>
       <input 
         type="text" 
         placeholder="Search for a country..." 
         @input=${handleSearch}
-        class="w-full pl-16 pr-4 py-4 rounded-md bg-transparent text-very-dark-blue-text dark:text-white placeholder-dark-gray dark:placeholder-white outline-none"
+        class="w-full pl-16 pr-4 py-4 rounded-md bg-transparent text-grey-950 dark:text-white placeholder-grey-400 dark:placeholder-white outline-none font-semibold"
       >
     </div>
     
-    <div class="relative w-48 shadow-md rounded-md bg-white dark:bg-dark-blue">
+    <div class="relative w-48 shadow-md rounded-md bg-white dark:bg-blue-900">
       <select 
         @change=${handleRegionFilter}
-        class="w-full px-6 py-4 rounded-md bg-transparent text-very-dark-blue-text dark:text-white appearance-none cursor-pointer outline-none"
+        class="w-full px-6 py-4 rounded-md bg-transparent text-grey-950 dark:text-white appearance-none cursor-pointer outline-none font-semibold"
       >
-        <option value="" class="bg-white dark:bg-dark-blue">Filter by Region</option>
-        <option value="Africa" class="bg-white dark:bg-dark-blue">Africa</option>
-        <option value="Americas" class="bg-white dark:bg-dark-blue">Americas</option>
-        <option value="Asia" class="bg-white dark:bg-dark-blue">Asia</option>
-        <option value="Europe" class="bg-white dark:bg-dark-blue">Europe</option>
-        <option value="Oceania" class="bg-white dark:bg-dark-blue">Oceania</option>
+        <option value="" disabled selected hidden>Filter by Region</option>
+        <option value="" class="bg-white dark:bg-blue-900">All Regions</option>
+        <option value="Africa" class="bg-white dark:bg-blue-900">Africa</option>
+        <option value="Americas" class="bg-white dark:bg-blue-900">Americas</option>
+        <option value="Asia" class="bg-white dark:bg-blue-900">Asia</option>
+        <option value="Europe" class="bg-white dark:bg-blue-900">Europe</option>
+        <option value="Oceania" class="bg-white dark:bg-blue-900">Oceania</option>
       </select>
-       <span class="absolute right-4 top-4 pointer-events-none text-dark-gray dark:text-white material-icons">expand_more</span>
+       <span class="absolute right-4 top-4 pointer-events-none text-grey-400 dark:text-white material-icons">expand_more</span>
     </div>
   </div>
 
   ${state.loading ? html`<p class="text-center text-xl">Loading...</p>` : ''}
   ${state.error ? html`<p class="text-center text-red-500">${state.error}</p>` : ''}
   
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 md:gap-20">
     ${state.filteredCountries.map(CountryCard)}
   </div>
 `;
@@ -189,11 +190,11 @@ const DetailView = () => {
   };
 
   return html`
-    <button @click=${goBack} class="bg-white dark:bg-dark-blue shadow-md px-8 py-2 rounded-md mb-12 text-very-dark-blue-text dark:text-white flex items-center gap-2 hover:opacity-75 transition-opacity">
+    <button @click=${goBack} class="bg-white dark:bg-blue-900 shadow-md px-8 py-2 rounded-md mb-12 text-grey-950 dark:text-white flex items-center gap-2 hover:opacity-75 transition-opacity">
        <span class="material-icons">arrow_back</span> Back
     </button>
 
-    <div class="flex flex-col lg:flex-row gap-12 lg:gap-28 items-center lg:items-start text-very-dark-blue-text dark:text-white">
+    <div class="flex flex-col lg:flex-row gap-12 lg:gap-28 items-center lg:items-start text-grey-950 dark:text-white">
         <img src="${country.flags.svg}" alt="${country.name} Flag" class="w-full lg:w-1/2 max-w-xl shadow-lg">
         
         <div class="w-full lg:w-1/2 py-8">
@@ -223,7 +224,7 @@ const DetailView = () => {
       const borderCountry = state.countries.find(c => c.alpha3Code === border);
       if (borderCountry) showDetail(borderCountry);
     }}
-                            class="bg-white dark:bg-dark-blue shadow-sm px-6 py-1 rounded-sm text-sm hover:opacity-75 transition-opacity text-very-dark-blue-text dark:text-white"
+                            class="bg-white dark:bg-blue-900 shadow-sm px-6 py-1 rounded-sm text-sm hover:opacity-75 transition-opacity text-grey-950 dark:text-white"
                         >
                             ${getBorderName(border)}
                         </button>
@@ -237,7 +238,7 @@ const DetailView = () => {
 
 const appTemplate = () => html`
   ${Header()}
-  <main class="container mx-auto px-4 md:px-12 py-8 min-h-screen">
+  <main class="container mx-auto px-12 md:px-20 py-8 min-h-screen">
     ${state.view === 'home' ? HomeView() : DetailView()}
   </main>
 `;
