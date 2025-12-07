@@ -156,6 +156,7 @@ const HomeView = () => html`
       <input 
         type="text" 
         placeholder="Search for a country..." 
+        .value=${state.searchTerm}
         @input=${handleSearch}
         class="w-full pl-16 pr-4 py-4 rounded-md bg-transparent text-grey-950 dark:text-white placeholder-grey-400 dark:placeholder-white outline-none font-semibold"
       >
@@ -163,6 +164,7 @@ const HomeView = () => html`
     
     <div class="relative w-48 shadow-md rounded-md bg-white dark:bg-blue-900">
       <select 
+        .value=${state.regionFilter}
         @change=${handleRegionFilter}
         class="w-full px-6 py-4 rounded-md bg-transparent text-grey-950 dark:text-white appearance-none cursor-pointer outline-none font-semibold"
       >
