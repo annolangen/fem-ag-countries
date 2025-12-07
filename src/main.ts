@@ -1,20 +1,26 @@
 import { html, render } from 'lit-html';
+import { getCountries } from '@yusifaliyevpro/countries';
 
+// specific fields to fetch (limit 10)
+const countryFields = [
+  'name', 'population', 'region', 'capital', 'flags', 'cca3',
+  'subregion', 'currencies', 'languages', 'borders'
+] as const;
+
+// Define interface manually matching the fetched fields for clarity & type safety
 interface Country {
-  name: string;
+  name: {
+    common: string;
+    nativeName?: Record<string, { common: string }>;
+  };
   population: number;
   region: string;
-  capital?: string;
-  flags: {
-    svg: string;
-    png: string;
-  };
-  alpha3Code: string;
-  nativeName?: string;
+  capital?: string[];
+  flags: { svg: string; png: string };
+  cca3: string;
   subregion?: string;
-  topLevelDomain?: string[];
-  currencies?: { name: string }[];
-  languages?: { name: string }[];
+  currencies?: Record<string, { name: string }>;
+  languages?: Record<string, string>;
   borders?: string[];
 }
 
@@ -24,7 +30,6 @@ interface AppState {
   loading: boolean;
   error: string | null;
   darkMode: boolean;
-  view: 'home' | 'detail';
   selectedCountry: Country | null;
   searchTerm: string;
   regionFilter: string;
@@ -36,7 +41,6 @@ const state: AppState = {
   loading: true,
   error: null,
   darkMode: false,
-  view: 'home',
   selectedCountry: null,
   searchTerm: '',
   regionFilter: '',
@@ -82,7 +86,7 @@ const handleRegionFilter = (e: Event) => {
 
 const applyFilters = () => {
   state.filteredCountries = state.countries.filter(country => {
-    const matchesSearch = country.name.toLowerCase().includes(state.searchTerm);
+    const matchesSearch = country.name.common.toLowerCase().includes(state.searchTerm);
     const matchesRegion = state.regionFilter ? country.region === state.regionFilter : true;
     return matchesSearch && matchesRegion;
   });
@@ -91,22 +95,19 @@ const applyFilters = () => {
 
 const showDetail = (country: Country) => {
   state.selectedCountry = country;
-  state.view = 'detail';
   window.scrollTo(0, 0);
   update();
 };
 
 const goBack = () => {
-  state.view = 'home';
   state.selectedCountry = null;
   update();
 };
 
-const fetchCountries = async () => {
+const fetchCountriesData = async () => {
   try {
-    const response = await fetch('/data.json');
-    if (!response.ok) throw new Error('Failed to load data');
-    const data = await response.json();
+    // Cast result to Country[] because of strict library typing vs our manual interface
+    const data = await getCountries({ fields: countryFields }) as unknown as Country[];
     state.countries = data;
     state.filteredCountries = data;
     state.loading = false;
@@ -118,7 +119,7 @@ const fetchCountries = async () => {
 };
 
 // Components
-const Header = () => html`
+const HeaderView = () => html`
   <header class="bg-white dark:bg-blue-900 shadow-md py-6 px-12 md:px-20 flex justify-between items-center transition-colors duration-200">
     <h1 class="font-extrabold text-lg md:text-2xl text-grey-950 dark:text-white">Where in the world?</h1>
     <button @click=${toggleDarkMode} class="flex items-center gap-2 font-semibold text-grey-950 dark:text-white">
@@ -128,15 +129,15 @@ const Header = () => html`
   </header>
 `;
 
-const CountryCard = (country: Country) => html`
+const CountryCardView = (country: Country) => html`
   <div @click=${() => showDetail(country)} class="bg-white dark:bg-blue-900 rounded-md shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200">
-    <img src="${country.flags.png}" alt="${country.name} Flag" class="w-full aspect-[3/2] object-fill">
+    <img src="${country.flags.png}" alt="${country.name.common} Flag" class="w-full aspect-[3/2] object-fill">
     <div class="p-6">
-      <h2 class="font-extrabold text-lg mb-4 text-grey-950 dark:text-white">${country.name}</h2>
+      <h2 class="font-extrabold text-lg mb-4 text-grey-950 dark:text-white">${country.name.common}</h2>
       <div class="text-sm space-y-1 text-grey-950 dark:text-white">
         <p><span class="font-semibold">Population:</span> ${country.population.toLocaleString()}</p>
         <p><span class="font-semibold">Region:</span> ${country.region}</p>
-        <p><span class="font-semibold">Capital:</span> ${country.capital}</p>
+        <p><span class="font-semibold">Capital:</span> ${country.capital?.[0] || 'N/A'}</p>
       </div>
     </div>
   </div>
@@ -175,19 +176,31 @@ const HomeView = () => html`
   ${state.error ? html`<p class="text-center text-red-500">${state.error}</p>` : ''}
   
   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-10 md:gap-20">
-    ${state.filteredCountries.map(CountryCard)}
+    ${state.filteredCountries.map(CountryCardView)}
   </div>
 `;
 
-const DetailView = () => {
-  if (!state.selectedCountry) return html``;
-  const country = state.selectedCountry;
-
+const DetailView = (country: Country) => {
   // Helper to find border country name
   const getBorderName = (code: string) => {
-    const borderCountry = state.countries.find(c => c.alpha3Code === code);
-    return borderCountry ? borderCountry.name : code;
+    // Note: v3.1 uses 'cca3' for alpha3Code
+    const borderCountry = state.countries.find(c => c.cca3 === code);
+    return borderCountry ? borderCountry.name.common : code;
   };
+
+  // v3.1 helpers
+  const nativeName = country.name.nativeName
+    ? Object.values(country.name.nativeName)[0]?.common
+    : country.name.common;
+
+  const currencies = country.currencies
+    ? Object.values(country.currencies).map(c => c.name).join(', ')
+    : 'N/A';
+
+  // v3.1 languages is { key: string }
+  const languages = country.languages
+    ? Object.values(country.languages).join(', ')
+    : 'N/A';
 
   return html`
     <button @click=${goBack} class="bg-white dark:bg-blue-900 shadow-md px-8 py-2 rounded-md mb-12 text-grey-950 dark:text-white flex items-center gap-2 hover:opacity-75 transition-opacity">
@@ -195,23 +208,22 @@ const DetailView = () => {
     </button>
 
     <div class="flex flex-col lg:flex-row gap-12 lg:gap-28 items-center lg:items-start text-grey-950 dark:text-white">
-        <img src="${country.flags.svg}" alt="${country.name} Flag" class="w-full lg:w-1/2 max-w-xl shadow-lg">
+        <img src="${country.flags.svg}" alt="${country.name.common} Flag" class="w-full lg:w-1/2 max-w-xl shadow-lg">
         
         <div class="w-full lg:w-1/2 py-8">
-            <h2 class="text-3xl font-extrabold mb-8">${country.name}</h2>
+            <h2 class="text-3xl font-extrabold mb-8">${country.name.common}</h2>
             
             <div class="flex flex-col md:flex-row gap-8 md:gap-16 mb-12">
                 <div class="space-y-2">
-                    <p><span class="font-semibold">Native Name:</span> ${country.nativeName}</p>
+                    <p><span class="font-semibold">Native Name:</span> ${nativeName}</p>
                     <p><span class="font-semibold">Population:</span> ${country.population.toLocaleString()}</p>
                     <p><span class="font-semibold">Region:</span> ${country.region}</p>
                     <p><span class="font-semibold">Sub Region:</span> ${country.subregion}</p>
-                    <p><span class="font-semibold">Capital:</span> ${country.capital}</p>
+                    <p><span class="font-semibold">Capital:</span> ${country.capital?.[0] || 'N/A'}</p>
                 </div>
                 <div class="space-y-2">
-                    <p><span class="font-semibold">Top Level Domain:</span> ${country.topLevelDomain?.join(', ')}</p>
-                    <p><span class="font-semibold">Currencies:</span> ${country.currencies?.map(c => c.name).join(', ')}</p>
-                    <p><span class="font-semibold">Languages:</span> ${country.languages?.map(l => l.name).join(', ')}</p>
+                    <p><span class="font-semibold">Currencies:</span> ${currencies}</p>
+                    <p><span class="font-semibold">Languages:</span> ${languages}</p>
                 </div>
             </div>
 
@@ -221,7 +233,7 @@ const DetailView = () => {
                     ${country.borders?.length ? country.borders.map(border => html`
                         <button 
                             @click=${() => {
-      const borderCountry = state.countries.find(c => c.alpha3Code === border);
+      const borderCountry = state.countries.find(c => c.cca3 === border);
       if (borderCountry) showDetail(borderCountry);
     }}
                             class="bg-white dark:bg-blue-900 shadow-sm px-6 py-1 rounded-sm text-sm hover:opacity-75 transition-opacity text-grey-950 dark:text-white"
@@ -237,10 +249,10 @@ const DetailView = () => {
 };
 
 const appTemplate = () => html`
-  ${Header()}
+  ${HeaderView()}
   <main class="container mx-auto px-12 md:px-20 py-8 min-h-screen">
-    ${state.view === 'home' ? HomeView() : DetailView()}
+    ${state.selectedCountry ? DetailView(state.selectedCountry) : HomeView()}
   </main>
 `;
 
-fetchCountries();
+fetchCountriesData();
