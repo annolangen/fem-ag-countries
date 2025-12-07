@@ -89,13 +89,29 @@ const handleRegionFilter = (e: Event) => {
   state.regionFilter = target.value;
 };
 
+const handleRouting = () => {
+  const hash = window.location.hash.slice(1); // remove '#'
+  if (hash) {
+    // Note: Use cca3 from hash to find country
+    const country = state.countries.find(c => c.cca3 === hash);
+    if (country) {
+      state.selectedCountry = country;
+      window.scrollTo(0, 0);
+    } else {
+      // If country not found (maybe invalid hash), go back to home
+      state.selectedCountry = null;
+    }
+  } else {
+    state.selectedCountry = null;
+  }
+};
+
 const showDetail = (country: Country) => {
-  state.selectedCountry = country;
-  window.scrollTo(0, 0);
+  window.location.hash = country.cca3;
 };
 
 const goBack = () => {
-  state.selectedCountry = null;
+  window.location.hash = '';
 };
 
 const fetchCountriesData = async () => {
@@ -105,11 +121,14 @@ const fetchCountriesData = async () => {
     state.countries = data;
     // state.filteredCountries is derived automatically by the Proxy when 'countries' is set
     state.loading = false;
+    handleRouting(); // Handle initial hash (deep link) after data load
   } catch (err) {
     state.error = (err as Error).message;
     state.loading = false;
   }
 };
+
+window.addEventListener('hashchange', handleRouting);
 
 // Components
 const HeaderView = () => html`
