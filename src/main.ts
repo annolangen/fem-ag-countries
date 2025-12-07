@@ -35,7 +35,29 @@ interface AppState {
   regionFilter: string;
 }
 
-const state: AppState = {
+// Reactive State Management
+const createState = <T extends object>(initialState: T): T => {
+  return new Proxy(initialState, {
+    set(target, property, value) {
+      const result = Reflect.set(target, property, value);
+
+      // Derived State Logic: Auto-update filteredCountries
+      if (property === 'countries' || property === 'searchTerm' || property === 'regionFilter') {
+        const s = target as unknown as AppState;
+        s.filteredCountries = s.countries.filter(country => {
+          const matchesSearch = country.name.common.toLowerCase().includes(s.searchTerm);
+          const matchesRegion = s.regionFilter ? country.region === s.regionFilter : true;
+          return matchesSearch && matchesRegion;
+        });
+      }
+
+      render(appTemplate(), document.body);
+      return result;
+    }
+  });
+};
+
+const state = createState<AppState>({
   countries: [],
   filteredCountries: [],
   loading: true,
@@ -44,21 +66,7 @@ const state: AppState = {
   selectedCountry: null,
   searchTerm: '',
   regionFilter: '',
-};
-
-// Initialize Dark Mode
-if (localStorage.getItem('darkMode') === 'true' ||
-  (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-  state.darkMode = true;
-  document.documentElement.classList.add('dark');
-} else {
-  state.darkMode = false;
-  document.documentElement.classList.remove('dark');
-}
-
-const update = () => {
-  render(appTemplate(), document.body);
-};
+});
 
 const toggleDarkMode = () => {
   state.darkMode = !state.darkMode;
@@ -69,39 +77,25 @@ const toggleDarkMode = () => {
     document.documentElement.classList.remove('dark');
     localStorage.setItem('darkMode', 'false');
   }
-  update();
 };
 
 const handleSearch = (e: InputEvent) => {
   const target = e.target as HTMLInputElement;
   state.searchTerm = target.value.toLowerCase();
-  applyFilters();
 };
 
 const handleRegionFilter = (e: Event) => {
   const target = e.target as HTMLSelectElement;
   state.regionFilter = target.value;
-  applyFilters();
-};
-
-const applyFilters = () => {
-  state.filteredCountries = state.countries.filter(country => {
-    const matchesSearch = country.name.common.toLowerCase().includes(state.searchTerm);
-    const matchesRegion = state.regionFilter ? country.region === state.regionFilter : true;
-    return matchesSearch && matchesRegion;
-  });
-  update();
 };
 
 const showDetail = (country: Country) => {
   state.selectedCountry = country;
   window.scrollTo(0, 0);
-  update();
 };
 
 const goBack = () => {
   state.selectedCountry = null;
-  update();
 };
 
 const fetchCountriesData = async () => {
@@ -109,13 +103,12 @@ const fetchCountriesData = async () => {
     // Cast result to Country[] because of strict library typing vs our manual interface
     const data = await getCountries({ fields: countryFields }) as unknown as Country[];
     state.countries = data;
-    state.filteredCountries = data;
+    // state.filteredCountries is derived automatically by the Proxy when 'countries' is set
     state.loading = false;
   } catch (err) {
     state.error = (err as Error).message;
     state.loading = false;
   }
-  update();
 };
 
 // Components
@@ -255,4 +248,19 @@ const appTemplate = () => html`
   </main>
 `;
 
-fetchCountriesData();
+// Initialize App
+const init = () => {
+  // Initialize Dark Mode
+  if (localStorage.getItem('darkMode') === 'true' ||
+    (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    state.darkMode = true;
+    document.documentElement.classList.add('dark');
+  } else {
+    state.darkMode = false;
+    document.documentElement.classList.remove('dark');
+  }
+
+  fetchCountriesData();
+};
+
+init();
