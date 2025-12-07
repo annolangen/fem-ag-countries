@@ -79,14 +79,12 @@ const toggleDarkMode = () => {
   }
 };
 
-const handleSearch = (e: InputEvent) => {
-  const target = e.target as HTMLInputElement;
-  state.searchTerm = target.value.toLowerCase();
+function handleSearch(this: HTMLInputElement) {
+  state.searchTerm = this.value.toLowerCase();
 };
 
-const handleRegionFilter = (e: Event) => {
-  const target = e.target as HTMLSelectElement;
-  state.regionFilter = target.value;
+function handleRegionFilter(this: HTMLSelectElement) {
+  state.regionFilter = this.value;
 };
 
 const handleRouting = () => {
