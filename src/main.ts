@@ -51,7 +51,7 @@ const createState = <T extends object>(initialState: T): T => {
         });
       }
 
-      render(appTemplate(), document.body);
+      render(AppView(), document.body);
       return result;
     }
   });
@@ -104,10 +104,6 @@ const handleRouting = () => {
   }
 };
 
-const showDetail = (country: Country) => {
-  window.location.hash = country.cca3;
-};
-
 const goBack = () => {
   window.location.hash = '';
 };
@@ -140,7 +136,7 @@ const HeaderView = () => html`
 `;
 
 const CountryCardView = (country: Country) => html`
-  <div @click=${() => showDetail(country)} class="bg-white dark:bg-blue-900 rounded-md shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200">
+  <div @click=${() => window.location.hash = country.cca3} class="bg-white dark:bg-blue-900 rounded-md shadow-md overflow-hidden cursor-pointer hover:scale-105 transition-transform duration-200">
     <img src="${country.flags.png}" alt="${country.name.common} Flag" class="w-full aspect-[3/2] object-fill">
     <div class="p-6">
       <h2 class="font-extrabold text-lg mb-4 text-grey-950 dark:text-white">${country.name.common}</h2>
@@ -244,7 +240,7 @@ const DetailView = (country: Country) => {
                         <button 
                             @click=${() => {
       const borderCountry = state.countries.find(c => c.cca3 === border);
-      if (borderCountry) showDetail(borderCountry);
+      if (borderCountry) window.location.hash = borderCountry.cca3;
     }}
                             class="bg-white dark:bg-blue-900 border-2 border-gray-200 dark:border-none px-6 py-1 rounded text-sm hover:opacity-75 transition-opacity text-grey-950 dark:text-white font-light"
                         >
@@ -258,26 +254,23 @@ const DetailView = (country: Country) => {
     `;
 };
 
-const appTemplate = () => html`
+const AppView = () => html`
   ${HeaderView()}
   <main class="container mx-auto px-12 md:px-20 py-8 min-h-screen">
     ${state.selectedCountry ? DetailView(state.selectedCountry) : HomeView()}
   </main>
 `;
 
-// Initialize App
-const init = () => {
-  // Initialize Dark Mode
-  if (localStorage.getItem('darkMode') === 'true' ||
-    (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    state.darkMode = true;
-    document.documentElement.classList.add('dark');
-  } else {
-    state.darkMode = false;
-    document.documentElement.classList.remove('dark');
-  }
 
-  fetchCountriesData();
-};
+// Initialize Dark Mode
+if (localStorage.getItem('darkMode') === 'true' ||
+  (!('darkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  state.darkMode = true;
+  document.documentElement.classList.add('dark');
+} else {
+  state.darkMode = false;
+  document.documentElement.classList.remove('dark');
+}
 
-init();
+fetchCountriesData();
+
