@@ -37,6 +37,25 @@ Users should be able to:
 - Solution URL: [GitHub Repository](https://github.com/annolangen/fem-ag-countries)
 - Live Site URL: [https://annolangen.github.io/fem-ag-countries](https://annolangen.github.io/fem-ag-countries)
 
+## How to Run
+
+1.  **Start Development Server**:
+    ```bash
+    npm run dev
+    ```
+2.  **Build for Production**:
+    ```bash
+    npm run build
+    npm run preview
+    ```
+
+## Project Structure
+
+-   `src/main.ts`: Application logic (State, Components, Router).
+-   `src/main.css`: Tailwind imports.
+-   `public/data.json`: Source data.
+-   `tailwind.config.js`: Design tokens.
+
 ## My process
 
 ### Built with
@@ -50,6 +69,12 @@ Users should be able to:
 - [Tailwind CSS](https://tailwindcss.com/)
 - [lit-html](https://lit.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
+
+### Design Decisions
+
+- **Dark Mode Toggle**: The design files show static "Dark Mode" text with a moon icon. We implemented a dynamic toggle that switches text between "Dark Mode" and "Light Mode" based on the active state for better user clarity.
+- **Region Filter Reset**: The design files do not show a way to clear the region filter once selected. We added an "All Regions" option to the dropdown to provide this necessary functionality.
+- **API Field Limit**: The `@yusifaliyevpro/countries` package (wrapping REST Countries v3.1) imposes a 10-field limit on responses. To stay within this limit while maintaining critical features, we excluded the Top Level Domain (TLD) field from the Detail View, prioritizing core identity, location, and border data.
 
 ### What I learned
 
