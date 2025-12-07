@@ -53,8 +53,7 @@ Users should be able to:
 
 -   `src/main.ts`: Application logic (State, Components, Router).
 -   `src/main.css`: Tailwind imports.
--   `public/data.json`: Source data.
--   `tailwind.config.js`: Design tokens.
+-   `tailwind.config.js`: Custom color palette and font definitions matching the provided style guide.
 
 ## My process
 
