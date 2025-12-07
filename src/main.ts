@@ -236,7 +236,7 @@ const DetailView = (country: Country) => {
       const borderCountry = state.countries.find(c => c.cca3 === border);
       if (borderCountry) showDetail(borderCountry);
     }}
-                            class="bg-white dark:bg-blue-900 shadow-sm px-6 py-1 rounded-sm text-sm hover:opacity-75 transition-opacity text-grey-950 dark:text-white"
+                            class="bg-white dark:bg-blue-900 border-2 border-gray-200 dark:border-none px-6 py-1 rounded text-sm hover:opacity-75 transition-opacity text-grey-950 dark:text-white font-light"
                         >
                             ${getBorderName(border)}
                         </button>
